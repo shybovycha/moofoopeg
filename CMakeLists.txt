@@ -4,9 +4,12 @@ project(moofoopeg VERSION 0.1.0 LANGUAGES CXX)
 
 add_executable(moofoopeg main.cpp)
 
-add_subdirectory(SFML-2.3)
+set_target_properties(moofoopeg PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+)
 
-# find_package(SFML 2.3 COMPONENTS graphics window system audio REQUIRED)
+add_subdirectory(SFML-2.4)
 
-# target_include_directories(${SFML_INCLUDE_DIR})
 target_link_libraries(moofoopeg PRIVATE sfml-graphics sfml-window sfml-system)

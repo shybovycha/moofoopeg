@@ -1,5 +1,5 @@
 #include <SFML/Graphics.hpp>
-#include <SFML/OpenGL.hpp>
+#include <SFML/Window.hpp>
 
 #include <stdio.h>
 
@@ -96,62 +96,70 @@ int checkWin() {
 }
 
 int main() {
-  RenderWindow App(VideoMode(800, 600), "MooFooPeg");
-  App.PreserveOpenGLStates(true);
+  sf::RenderWindow App(sf::VideoMode(800, 600), "MooFooPeg", sf::Style::Default, sf::ContextSettings(32));
+
+  App.setVerticalSyncEnabled(true);
+  App.setActive(true);
 
   // Peg
-  Image PegImage;
+  sf::Texture PegImage;
 
-  if (!PegImage.LoadFromFile("peg.jpg")) {
+  if (!PegImage.loadFromFile("peg.jpg")) {
     return EXIT_FAILURE;
   }
 
-  Sprite Peg(PegImage);
+  sf::Sprite Peg(PegImage);
 
   // Selected peg
-  Image SelImage;
+  sf::Texture SelImage;
 
-  if (!SelImage.LoadFromFile("sel_peg.jpg")) {
+  if (!SelImage.loadFromFile("sel_peg.jpg")) {
     return EXIT_FAILURE;
   }
 
-  Sprite SelPeg(SelImage);
+  sf::Sprite SelPeg(SelImage);
 
   // Empty cursor
-  Image EmptyCursorImage;
+  sf::Texture EmptyCursorImage;
 
-  if (!EmptyCursorImage.LoadFromFile("cur_hole.jpg")) {
+  if (!EmptyCursorImage.loadFromFile("cur_hole.jpg")) {
     return EXIT_FAILURE;
   }
 
-  Sprite EmptyCursor(EmptyCursorImage);
+  sf::Sprite EmptyCursor(EmptyCursorImage);
 
   // Cursor over peg
-  Image PegCursorImage;
+  sf::Texture PegCursorImage;
 
-  if (!PegCursorImage.LoadFromFile("cur_peg.jpg")) {
+  if (!PegCursorImage.loadFromFile("cur_peg.jpg")) {
     return EXIT_FAILURE;
   }
 
-  Sprite PegCursor(PegCursorImage);
+  sf::Sprite PegCursor(PegCursorImage);
 
   // Cursor over selected peg
-  Image SelPegCursorImage;
+  sf::Texture SelPegCursorImage;
 
-  if (!SelPegCursorImage.LoadFromFile("cur_sel.jpg")) {
+  if (!SelPegCursorImage.loadFromFile("cur_sel.jpg")) {
     return EXIT_FAILURE;
   }
 
-  Sprite SelPegCursor(SelPegCursorImage);
+  sf::Sprite SelPegCursor(SelPegCursorImage);
 
   // Hole
-  Image HoleImage;
+  sf::Texture HoleImage;
 
-  if (!HoleImage.LoadFromFile("hole.jpg")) {
+  if (!HoleImage.loadFromFile("hole.jpg")) {
     return EXIT_FAILURE;
   }
 
-  Sprite Hole(HoleImage);
+  sf::Sprite Hole(HoleImage);
+
+  sf::Font font;
+
+  if (!font.loadFromFile("arial.ttf")) {
+    return EXIT_FAILURE;
+  }
 
   // Startup
   // Cursor and selected peg
@@ -163,39 +171,40 @@ int main() {
   fillField();
 
   // Setup a perspective projection
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(90.f, 1.f, 1.f, 500.f);
+  // glMatrixMode(GL_PROJECTION);
+  // glLoadIdentity();
+  // gluPerspective(90.f, 1.f, 1.f, 500.f);
 
   // Start game loop
-  while (App.IsOpened()) {
+  while (App.isOpen()) {
     // Process events
-    Event Event;
+    sf::Event Event;
 
-    while (App.GetEvent(Event)) {
+    while (App.pollEvent(Event)) {
       // Close window : exit
-      if (Event.Type == Event::Closed) {
-        App.Close();
+      if (Event.type == sf::Event::Closed) {
+        App.close();
+        return 0;
       }
 
       // Escape key : exit
-      if ((Event.Type == Event::KeyPressed) && (Event.Key.Code == Key::Escape)) {
-        App.Close();
+      if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::Escape)) {
+        App.close();
         return 0;
       }
 
       // Manipulation
-      if (Event.Type == Event::KeyReleased) {
-        if (Event.Key.Code == Key::Right && FIELD[curRow][curCol + 1] > -1)
+      if (Event.type == sf::Event::KeyReleased) {
+        if (Event.key.code == sf::Keyboard::Right && FIELD[curRow][curCol + 1] > -1)
           curCol++; else
-        if (Event.Key.Code == Key::Left && FIELD[curRow][curCol - 1] > -1)
+        if (Event.key.code == sf::Keyboard::Left && FIELD[curRow][curCol - 1] > -1)
           curCol--; else
-        if (Event.Key.Code == Key::Up && FIELD[curRow - 1][curCol] > -1)
+        if (Event.key.code == sf::Keyboard::Up && FIELD[curRow - 1][curCol] > -1)
           curRow--; else
-        if (Event.Key.Code == Key::Down && FIELD[curRow + 1][curCol] > -1)
+        if (Event.key.code == sf::Keyboard::Down && FIELD[curRow + 1][curCol] > -1)
           curRow++;
 
-        if (Event.Key.Code == Key::Space) {
+        if (Event.key.code == sf::Keyboard::Space) {
           if (selRow != -1 && selCol != -1) {
             if (selRow != curRow || selCol != curCol) {
               swap(selRow, selCol, curRow, curCol);
@@ -210,10 +219,10 @@ int main() {
         }
       }
 
-      // Adjust the viewport when the window is resized
-      if (Event.Type == Event::Resized) {
-        glViewport(0, 0, Event.Size.Width, Event.Size.Height);
-      }
+      // // Adjust the viewport when the window is resized
+      // if (Event.type == sf::Event::Resized) {
+      //   glViewport(0, 0, Event.Size.Width, Event.Size.Height);
+      // }
     }
 
     if (curRow < 0) {
@@ -234,7 +243,7 @@ int main() {
 
     // ============ MAIN LOGIC GOES HERE =============
     // Clear screen
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    App.clear(sf::Color::Black);
 
     // Draw everything
     for (int i = 0; i < SIZE; i++) {
@@ -242,14 +251,14 @@ int main() {
         if (curRow == i && curCol == t) {
           if (selRow == curRow && selCol == curCol) {
             // cursor here
-            SelPegCursor.SetPosition(Vector2f(t * SelPegCursor.GetSize().x, i * SelPegCursor.GetSize().y));
-            App.Draw(SelPegCursor);
+            SelPegCursor.setPosition(sf::Vector2f(t * SelPegCursor.getTextureRect().width, i * SelPegCursor.getTextureRect().height));
+            App.draw(SelPegCursor);
           } else if (FIELD[i][t] > 0) {
-            PegCursor.SetPosition(Vector2f(t * PegCursor.GetSize().x, i * PegCursor.GetSize().y));
-            App.Draw(PegCursor);
+            PegCursor.setPosition(sf::Vector2f(t * PegCursor.getTextureRect().width, i * PegCursor.getTextureRect().height));
+            App.draw(PegCursor);
           } else {
-            EmptyCursor.SetPosition(Vector2f(t * EmptyCursor.GetSize().x, i * EmptyCursor.GetSize().y));
-            App.Draw(EmptyCursor);
+            EmptyCursor.setPosition(sf::Vector2f(t * EmptyCursor.getTextureRect().width, i * EmptyCursor.getTextureRect().height));
+            App.draw(EmptyCursor);
           }
 
           continue;
@@ -257,20 +266,20 @@ int main() {
 
         if (selRow == i && selCol == t && selRow != -1 && selCol != -1) {
           // selected peg here
-          SelPeg.SetPosition(Vector2f(t * SelPeg.GetSize().x, i * SelPeg.GetSize().y));
-          App.Draw(SelPeg);
+          SelPeg.setPosition(sf::Vector2f(t * SelPeg.getTextureRect().width, i * SelPeg.getTextureRect().height));
+          App.draw(SelPeg);
 
           continue;
         }
 
         if (FIELD[i][t] == 0) {
           // hole here
-          Hole.SetPosition(Vector2f(t * Hole.GetSize().x, i * Hole.GetSize().y));
-          App.Draw(Hole);
+          Hole.setPosition(sf::Vector2f(t * Hole.getTextureRect().width, i * Hole.getTextureRect().height));
+          App.draw(Hole);
         } else if (FIELD[i][t] > 0) {
           // peg here
-          Peg.SetPosition(Vector2f(t * Peg.GetSize().x, i * Peg.GetSize().y));
-          App.Draw(Peg);
+          Peg.setPosition(sf::Vector2f(t * Peg.getTextureRect().width, i * Peg.getTextureRect().height));
+          App.draw(Peg);
         }
       }
     }
@@ -283,21 +292,25 @@ int main() {
 
       sprintf(s, "Moves left:%d", cnt);
 
-      String Text(s);
-      Text.SetPosition(250.f, 10.f);
-      App.Draw(Text);
+      sf::Text Text;
+
+      Text.setString(s);
+      Text.setPosition(250.f, 10.f);
+      App.draw(Text);
     } else {
-      String Text("Game over!");
-      Text.SetStyle(sf::String::Bold);
-      //Text.SetPosition(300.f, 100.f);
-      Text.SetPosition((App.GetWidth() / 4) - (Text.GetRect().GetWidth() / 2), (App.GetHeight() / 4) - (Text.GetRect().GetHeight() / 2));
-      Text.SetColor(Color(255, 0, 0));
-      Text.Rotate(30);
-      App.Draw(Text);
+      sf::Text Text;
+
+      Text.setString("Game over!");
+      Text.setStyle(sf::Text::Bold);
+      //Text.setPosition(300.f, 100.f);
+      Text.setPosition((App.getSize().x / 4) - (Text.getLocalBounds().width / 2), (App.getSize().y / 4) - (Text.getLocalBounds().height / 2));
+      Text.setColor(sf::Color(255, 0, 0));
+      Text.rotate(30);
+      App.draw(Text);
     }
 
     // Finally, display the rendered frame on screen
-    App.Display();
+    App.display();
   }
 
   return 0;
