@@ -3,97 +3,139 @@
 
 #include <stdio.h>
 
-using namespace sf;
-using namespace std;
+#define FIELD_SIZE 7
+#define START_ROW 3
+#define START_COL 3
 
-#define SIZE 7
+#define NOT_A_FIELD -1
+#define EMPTY 0
+#define PEG 1
 
-int FIELD[SIZE][SIZE] = {{0}};
+#define abs(x) (x < 0) ? -x : x
 
-#define iabs(x) (x < 0) ? -x : x
+class Field {
+public:
+  Field() {
+    data = new int*[FIELD_SIZE];
 
-void fillField() {
-  for (int i = 0; i < SIZE; ++i) {
-    for (int t = 0; t < SIZE; ++t) {
-      if ((i < 2 && t < 2) ||
-        (i > 4 && t > 4) ||
-        (i > 4 && t < 2) ||
-        (i < 2 && t > 4)) {
-
-        FIELD[i][t] = -1;
-      } else {
-        FIELD[i][t] = 1;
-      }
+    for (int i = 0; i < FIELD_SIZE; ++i) {
+      data[i] = new int[FIELD_SIZE];
     }
   }
 
-  FIELD[3][3] = 0;
-}
+  ~Field() {
+    for (int i = 0; i < FIELD_SIZE; ++i) {
+      delete[] data[i];
+    }
 
-int checkMove(int row0, int col0, int row1, int col1) {
-  int dr = row1 - row0;
-  int dc = col1 - col0;
-
-  if (row0 >= SIZE || row1 >= SIZE || col0 >= SIZE || col1 >= SIZE) {
-    return 0;
+    delete[] data;
   }
 
-  if (row0 < 0 || row1 < 0 || col0 < 0 || col1 < 0) {
-    return 0;
-  }
+  void initialize() {
+    // data = {
+    //   { -1, -1, 1, 1, 1, -1, -1 },
+    //   { -1, -1, 1, 1, 1, -1, -1 },
+    //   {  1,  1, 1, 1, 1,  1,  1 },
+    //   {  1,  1, 1, 0, 1,  1,  1 },
+    //   {  1,  1, 1, 1, 1,  1,  1 },
+    //   { -1, -1, 1, 1, 1, -1, -1 },
+    //   { -1, -1, 1, 1, 1, -1, -1 }
+    // };
 
-  return (FIELD[row0][col0] == 1 &&
-      FIELD[row1][col1] == 0 &&
-      FIELD[row0 + dr / 2][col0 + dc / 2] == 1
-  );
-}
-
-int countMoves() {
-  int cnt = 0;
-
-  for (int i = 0; i < SIZE; i++) {
-    for (int t = 0; t < SIZE; t++) {
-      if (checkMove(i, t, i + 2, t) ||
-        checkMove(i, t, i - 2, t) ||
-        checkMove(i, t, i, t + 2) ||
-        checkMove(i, t, i, t - 2)
-      ) {
-        cnt++;
+    for (int i = 0; i < FIELD_SIZE; ++i) {
+      for (int t = 0; t < FIELD_SIZE; ++t) {
+        if ((i < 2 && t < 2) || (i < 2 && t > 4) || (i > 4 && t > 4) || (i > 4 && t < 2)) {
+          data[i][t] = NOT_A_FIELD;
+        } else {
+          data[i][t] = PEG;
+        }
       }
+    }
+
+    data[START_ROW][START_COL] = EMPTY;
+  }
+
+  bool isMoveValid(int rowFrom, int colFrom, int rowTo, int colTo) {
+    int dr = rowTo - rowFrom;
+    int dc = colTo - colFrom;
+
+    if (rowFrom >= FIELD_SIZE || rowTo >= FIELD_SIZE || colFrom >= FIELD_SIZE || colTo >= FIELD_SIZE) {
+      return 0;
+    }
+
+    if (rowFrom < 0 || rowTo < 0 || colFrom < 0 || colTo < 0) {
+      return 0;
+    }
+
+    return (data[rowFrom][colFrom] == PEG &&
+        data[rowTo][colTo] == EMPTY &&
+        data[rowFrom + (dr / 2)][colFrom + (dc / 2)] == PEG // TODO: rework to check there are holes all the way long
+    );
+  }
+
+  int countMovesRemaining() {
+    int cnt = 0;
+
+    for (int i = 0; i < FIELD_SIZE; ++i) {
+      for (int t = 0; t < FIELD_SIZE; ++t) {
+        if (isMoveValid(i, t, i + 2, t) ||
+          isMoveValid(i, t, i - 2, t) ||
+          isMoveValid(i, t, i, t + 2) ||
+          isMoveValid(i, t, i, t - 2)
+        ) {
+          ++cnt;
+        }
+      }
+    }
+
+    return cnt;
+  }
+
+  void swap(int rowFrom, int colFrom, int rowTo, int colTo) {
+    int dr = rowTo - rowFrom;
+    int dc = colTo - colFrom;
+
+    if (!isMoveValid(rowFrom, colFrom, rowTo, colTo)) {
+      return;
+    }
+
+    if ((dr == 0 && abs(dc) == 2) || (abs(dr) == 2 && dc == 0)) {
+      data[rowFrom][colFrom] = EMPTY;
+      data[rowFrom + (dr / 2)][colFrom + (dc / 2)] = EMPTY;
+      data[rowTo][colTo] = PEG;
     }
   }
 
-  return cnt;
-}
+  // // checks whether there is only one peg left on the board
+  // bool checkWin() {
+  //   int cnt = 0;
 
-void swap(int row0, int col0, int row1, int col1) {
-  int dr = row1 - row0;
-  int dc = col1 - col0;
+  //   for (int i = 0; i < FIELD_SIZE; ++i) {
+  //     for (int t = 0; t < FIELD_SIZE; ++t) {
+  //       if (data[i][t] == PEG) {
+  //         ++cnt;
+  //       }
+  //     }
+  //   }
 
-  if (!checkMove(row0, col0, row1, col1)) {
-    return;
+  //   return (cnt == 1);
+  // }
+
+  bool isValidPos(int row, int col) {
+    return row > -1 && col > -1 && row < FIELD_SIZE && col < FIELD_SIZE;
   }
 
-  if ((dr == 0 && iabs(dc) == 2) || (iabs(dr) == 2 && dc == 0)) {
-    FIELD[row0][col0] = 0;
-    FIELD[row0 + dr / 2][col0 + dc / 2] = 0;
-    FIELD[row1][col1] = 1;
-  }
-}
-
-int checkWin() {
-  int cnt = 0;
-
-  for (int i = 0; i < SIZE; i++) {
-    for (int t = 0; t < SIZE; t++) {
-      if (FIELD[i][t] > 0) {
-        cnt++;
-      }
-    }
+  bool isAvailable(unsigned int row, unsigned int col) {
+    return isValidPos(row, col) && data[row][col] != NOT_A_FIELD;
   }
 
-  return (cnt == 1);
-}
+  bool isEmpty(unsigned int row, unsigned int col) {
+    return isValidPos(row, col) && data[row][col] == EMPTY;
+  }
+
+private:
+  int **data;
+};
 
 int main() {
   sf::RenderWindow App(sf::VideoMode(800, 600), "MooFooPeg", sf::Style::Default, sf::ContextSettings(32));
@@ -163,17 +205,16 @@ int main() {
 
   // Startup
   // Cursor and selected peg
-  int curRow = 3;
-  int curCol = 3;
+  int curRow = START_ROW;
+  int curCol = START_COL;
   int selRow = -1;
   int selCol = -1;
 
-  fillField();
+  Field *field = new Field();
 
-  // Setup a perspective projection
-  // glMatrixMode(GL_PROJECTION);
-  // glLoadIdentity();
-  // gluPerspective(90.f, 1.f, 1.f, 500.f);
+  field->initialize();
+
+  bool stateChanged = true;
 
   // Start game loop
   while (App.isOpen()) {
@@ -195,34 +236,42 @@ int main() {
 
       // Manipulation
       if (Event.type == sf::Event::KeyReleased) {
-        if (Event.key.code == sf::Keyboard::Right && FIELD[curRow][curCol + 1] > -1)
-          curCol++; else
-        if (Event.key.code == sf::Keyboard::Left && FIELD[curRow][curCol - 1] > -1)
-          curCol--; else
-        if (Event.key.code == sf::Keyboard::Up && FIELD[curRow - 1][curCol] > -1)
-          curRow--; else
-        if (Event.key.code == sf::Keyboard::Down && FIELD[curRow + 1][curCol] > -1)
+        if (Event.key.code == sf::Keyboard::Right && field->isAvailable(curRow, curCol + 1)) {
+          curCol++;
+          stateChanged = true;
+        } else if (Event.key.code == sf::Keyboard::Left && field->isAvailable(curRow, curCol - 1)) {
+          curCol--;
+          stateChanged = true;
+        } else if (Event.key.code == sf::Keyboard::Up && field->isAvailable(curRow - 1, curCol)) {
+          curRow--;
+          stateChanged = true;
+        } else if (Event.key.code == sf::Keyboard::Down && field->isAvailable(curRow + 1, curCol)) {
           curRow++;
+          stateChanged = true;
+        }
 
-        if (Event.key.code == sf::Keyboard::Space) {
+        if (Event.key.code == sf::Keyboard::Space || Event.key.code == sf::Keyboard::Return) {
           if (selRow != -1 && selCol != -1) {
             if (selRow != curRow || selCol != curCol) {
-              swap(selRow, selCol, curRow, curCol);
+              field->swap(selRow, selCol, curRow, curCol);
               selRow = selCol = -1;
             } else if (selRow == curRow && selCol == curCol) {
               selRow = selCol = -1;
             }
-          } else if (FIELD[curRow][curCol] > 0) {
+
+            stateChanged = true;
+          } else if (!field->isEmpty(curRow, curCol)) {
             selRow = curRow;
             selCol = curCol;
+
+            stateChanged = true;
           }
         }
       }
+    }
 
-      // // Adjust the viewport when the window is resized
-      // if (Event.type == sf::Event::Resized) {
-      //   glViewport(0, 0, Event.Size.Width, Event.Size.Height);
-      // }
+    if (!stateChanged) {
+      continue;
     }
 
     if (curRow < 0) {
@@ -233,12 +282,12 @@ int main() {
       curCol = 0;
     }
 
-    if (curRow > SIZE - 1) {
-      curRow = SIZE - 1;
+    if (curRow > FIELD_SIZE - 1) {
+      curRow = FIELD_SIZE - 1;
     }
 
-    if (curCol > SIZE - 1) {
-      curCol = SIZE - 1;
+    if (curCol > FIELD_SIZE - 1) {
+      curCol = FIELD_SIZE - 1;
     }
 
     // ============ MAIN LOGIC GOES HERE =============
@@ -246,14 +295,14 @@ int main() {
     App.clear(sf::Color::Black);
 
     // Draw everything
-    for (int i = 0; i < SIZE; i++) {
-      for (int t = 0; t < SIZE; t++) {
+    for (int i = 0; i < FIELD_SIZE; i++) {
+      for (int t = 0; t < FIELD_SIZE; t++) {
         if (curRow == i && curCol == t) {
           if (selRow == curRow && selCol == curCol) {
             // cursor here
             SelPegCursor.setPosition(sf::Vector2f(t * SelPegCursor.getTextureRect().width, i * SelPegCursor.getTextureRect().height));
             App.draw(SelPegCursor);
-          } else if (FIELD[i][t] > 0) {
+          } else if (!field->isEmpty(i, t)) {
             PegCursor.setPosition(sf::Vector2f(t * PegCursor.getTextureRect().width, i * PegCursor.getTextureRect().height));
             App.draw(PegCursor);
           } else {
@@ -272,11 +321,11 @@ int main() {
           continue;
         }
 
-        if (FIELD[i][t] == 0) {
+        if (field->isEmpty(i, t)) {
           // hole here
           Hole.setPosition(sf::Vector2f(t * Hole.getTextureRect().width, i * Hole.getTextureRect().height));
           App.draw(Hole);
-        } else if (FIELD[i][t] > 0) {
+        } else if (field->isAvailable(i, t) && !field->isEmpty(i, t)) {
           // peg here
           Peg.setPosition(sf::Vector2f(t * Peg.getTextureRect().width, i * Peg.getTextureRect().height));
           App.draw(Peg);
@@ -285,7 +334,7 @@ int main() {
     }
 
     // Draw some text
-    int cnt = countMoves();
+    int cnt = field->countMovesRemaining();
 
     if (cnt > 0) {
       char *s = new char[255];
@@ -311,7 +360,10 @@ int main() {
 
     // Finally, display the rendered frame on screen
     App.display();
+    stateChanged = false;
   }
+
+  delete field;
 
   return 0;
 }
