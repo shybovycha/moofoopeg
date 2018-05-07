@@ -1,7 +1,8 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 
-#include <stdio.h>
+#include <iostream>
+#include <string>
 
 #define FIELD_SIZE 7
 #define START_ROW 3
@@ -106,6 +107,10 @@ public:
     }
   }
 
+  sf::Vector2i getSize() {
+    return sf::Vector2i(FIELD_SIZE, FIELD_SIZE);
+  }
+
   // // checks whether there is only one peg left on the board
   // bool checkWin() {
   //   int cnt = 0;
@@ -137,233 +142,270 @@ private:
   int **data;
 };
 
-int main() {
-  sf::RenderWindow App(sf::VideoMode(800, 600), "MooFooPeg", sf::Style::Default, sf::ContextSettings(32));
+class Renderer {
+public:
+  Renderer() {}
 
-  App.setVerticalSyncEnabled(true);
-  App.setActive(true);
+  ~Renderer() {
+    delete Peg;
+    delete SelPeg;
+    delete EmptyCursor;
+    delete PegCursor;
+    delete SelPegCursor;
+    delete Hole;
 
-  // Peg
-  sf::Texture PegImage;
+    delete font;
 
-  if (!PegImage.loadFromFile("peg.jpg")) {
-    return EXIT_FAILURE;
+    delete App;
   }
 
-  sf::Sprite Peg(PegImage);
+  void initialize() {
+    loadResources();
 
-  // Selected peg
-  sf::Texture SelImage;
-
-  if (!SelImage.loadFromFile("sel_peg.jpg")) {
-    return EXIT_FAILURE;
+    initWindow();
   }
 
-  sf::Sprite SelPeg(SelImage);
-
-  // Empty cursor
-  sf::Texture EmptyCursorImage;
-
-  if (!EmptyCursorImage.loadFromFile("cur_hole.jpg")) {
-    return EXIT_FAILURE;
-  }
-
-  sf::Sprite EmptyCursor(EmptyCursorImage);
-
-  // Cursor over peg
-  sf::Texture PegCursorImage;
-
-  if (!PegCursorImage.loadFromFile("cur_peg.jpg")) {
-    return EXIT_FAILURE;
-  }
-
-  sf::Sprite PegCursor(PegCursorImage);
-
-  // Cursor over selected peg
-  sf::Texture SelPegCursorImage;
-
-  if (!SelPegCursorImage.loadFromFile("cur_sel.jpg")) {
-    return EXIT_FAILURE;
-  }
-
-  sf::Sprite SelPegCursor(SelPegCursorImage);
-
-  // Hole
-  sf::Texture HoleImage;
-
-  if (!HoleImage.loadFromFile("hole.jpg")) {
-    return EXIT_FAILURE;
-  }
-
-  sf::Sprite Hole(HoleImage);
-
-  sf::Font font;
-
-  if (!font.loadFromFile("arial.ttf")) {
-    return EXIT_FAILURE;
-  }
-
-  // Startup
-  // Cursor and selected peg
-  int curRow = START_ROW;
-  int curCol = START_COL;
-  int selRow = -1;
-  int selCol = -1;
-
-  Field *field = new Field();
-
-  field->initialize();
-
-  bool stateChanged = true;
-
-  // Start game loop
-  while (App.isOpen()) {
-    // Process events
-    sf::Event Event;
-
-    while (App.pollEvent(Event)) {
-      // Close window : exit
-      if (Event.type == sf::Event::Closed) {
-        App.close();
-        return 0;
-      }
-
-      // Escape key : exit
-      if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::Escape)) {
-        App.close();
-        return 0;
-      }
-
-      // Manipulation
-      if (Event.type == sf::Event::KeyReleased) {
-        if (Event.key.code == sf::Keyboard::Right && field->isAvailable(curRow, curCol + 1)) {
-          curCol++;
-          stateChanged = true;
-        } else if (Event.key.code == sf::Keyboard::Left && field->isAvailable(curRow, curCol - 1)) {
-          curCol--;
-          stateChanged = true;
-        } else if (Event.key.code == sf::Keyboard::Up && field->isAvailable(curRow - 1, curCol)) {
-          curRow--;
-          stateChanged = true;
-        } else if (Event.key.code == sf::Keyboard::Down && field->isAvailable(curRow + 1, curCol)) {
-          curRow++;
-          stateChanged = true;
-        }
-
-        if (Event.key.code == sf::Keyboard::Space || Event.key.code == sf::Keyboard::Return) {
-          if (selRow != -1 && selCol != -1) {
-            if (selRow != curRow || selCol != curCol) {
-              field->swap(selRow, selCol, curRow, curCol);
-              selRow = selCol = -1;
-            } else if (selRow == curRow && selCol == curCol) {
-              selRow = selCol = -1;
-            }
-
-            stateChanged = true;
-          } else if (!field->isEmpty(curRow, curCol)) {
-            selRow = curRow;
-            selCol = curCol;
-
-            stateChanged = true;
-          }
-        }
-      }
-    }
-
-    if (!stateChanged) {
-      continue;
-    }
-
-    if (curRow < 0) {
-      curRow = 0;
-    }
-
-    if (curCol < 0) {
-      curCol = 0;
-    }
-
-    if (curRow > FIELD_SIZE - 1) {
-      curRow = FIELD_SIZE - 1;
-    }
-
-    if (curCol > FIELD_SIZE - 1) {
-      curCol = FIELD_SIZE - 1;
-    }
-
-    // ============ MAIN LOGIC GOES HERE =============
+  void draw(Field *field, sf::Vector2i cursorPos, sf::Vector2i selectionPos) {
     // Clear screen
-    App.clear(sf::Color::Black);
+    App->clear(sf::Color::Black);
 
     // Draw everything
-    for (int i = 0; i < FIELD_SIZE; i++) {
-      for (int t = 0; t < FIELD_SIZE; t++) {
-        if (curRow == i && curCol == t) {
-          if (selRow == curRow && selCol == curCol) {
+    drawField(field, cursorPos, selectionPos);
+
+    // Draw some text
+    drawStatus(field);
+
+    // Finally, display the rendered frame on screen
+    App->display();
+  }
+
+  sf::Event* pollEvent() {
+    sf::Event *evt = new sf::Event();
+
+    if (!App->pollEvent(*evt)) {
+      return NULL;
+    }
+
+    return evt;
+  }
+
+protected:
+  sf::Sprite* loadSpriteFromFile(const char *path) {
+    sf::Texture *PegImage = new sf::Texture();
+
+    if (!PegImage->loadFromFile(path)) {
+      std::string exception = "Can not load image: `" + std::string(path) + "`";
+      throw exception.c_str();
+    }
+
+    return new sf::Sprite(*PegImage);
+  }
+
+  sf::Font* loadFontFromFile(const char *path) {
+    sf::Font *Font = new sf::Font();
+
+    if (!Font->loadFromFile(path)) {
+      std::string exception = "Can not load font: `" + std::string(path) + "`";
+
+      throw exception.c_str();
+    }
+
+    return Font;
+  }
+
+  void loadResources() {
+    std::cout << "Loading sprites..." << std::endl;
+
+    Peg = loadSpriteFromFile("peg.jpg");
+    SelPeg = loadSpriteFromFile("sel_peg.jpg");
+    EmptyCursor = loadSpriteFromFile("cur_hole.jpg");
+    PegCursor = loadSpriteFromFile("cur_peg.jpg");
+    SelPegCursor = loadSpriteFromFile("cur_sel.jpg");
+    Hole = loadSpriteFromFile("hole.jpg");
+
+    std::cout << "Loading fonts..." << std::endl;
+
+    font = loadFontFromFile("arial.ttf");
+
+    std::cout << "Resources loaded" << std::endl;
+  }
+
+  void initWindow() {
+    std::cout << "Opening a window..." << std::endl;
+
+    App = new sf::RenderWindow(sf::VideoMode(800, 600), "MooFooPeg", sf::Style::Default, sf::ContextSettings(32));
+
+    App->setVerticalSyncEnabled(true);
+    App->setActive(true);
+
+    std::cout << "Window opened" << std::endl;
+  }
+
+  void drawField(Field *field, sf::Vector2i cursorPos, sf::Vector2i selectionPos) {
+    for (int i = 0; i < field->getSize().x; i++) {
+      for (int t = 0; t < field->getSize().y; t++) {
+        if (cursorPos.x == i && cursorPos.y == t) {
+          if (selectionPos.x == cursorPos.x && selectionPos.y == cursorPos.y) {
             // cursor here
-            SelPegCursor.setPosition(sf::Vector2f(t * SelPegCursor.getTextureRect().width, i * SelPegCursor.getTextureRect().height));
-            App.draw(SelPegCursor);
+            drawSpriteAtFieldPosition(SelPegCursor, sf::Vector2i(t, i));
           } else if (!field->isEmpty(i, t)) {
-            PegCursor.setPosition(sf::Vector2f(t * PegCursor.getTextureRect().width, i * PegCursor.getTextureRect().height));
-            App.draw(PegCursor);
+            drawSpriteAtFieldPosition(PegCursor, sf::Vector2i(t, i));
           } else {
-            EmptyCursor.setPosition(sf::Vector2f(t * EmptyCursor.getTextureRect().width, i * EmptyCursor.getTextureRect().height));
-            App.draw(EmptyCursor);
+            drawSpriteAtFieldPosition(EmptyCursor, sf::Vector2i(t, i));
           }
 
           continue;
         }
 
-        if (selRow == i && selCol == t && selRow != -1 && selCol != -1) {
+        if (selectionPos.x == i && selectionPos.y == t && selectionPos.x != -1 && selectionPos.y != -1) {
           // selected peg here
-          SelPeg.setPosition(sf::Vector2f(t * SelPeg.getTextureRect().width, i * SelPeg.getTextureRect().height));
-          App.draw(SelPeg);
+          drawSpriteAtFieldPosition(SelPeg, sf::Vector2i(t, i));
 
           continue;
         }
 
         if (field->isEmpty(i, t)) {
           // hole here
-          Hole.setPosition(sf::Vector2f(t * Hole.getTextureRect().width, i * Hole.getTextureRect().height));
-          App.draw(Hole);
+          drawSpriteAtFieldPosition(Hole, sf::Vector2i(t, i));
         } else if (field->isAvailable(i, t) && !field->isEmpty(i, t)) {
           // peg here
-          Peg.setPosition(sf::Vector2f(t * Peg.getTextureRect().width, i * Peg.getTextureRect().height));
-          App.draw(Peg);
+          drawSpriteAtFieldPosition(Peg, sf::Vector2i(t, i));
+        }
+      }
+    }
+  }
+
+  void drawSpriteAtFieldPosition(sf::Sprite *sprite, sf::Vector2i position) {
+    sprite->setPosition(sf::Vector2f(position.x * sprite->getTextureRect().width, position.y * sprite->getTextureRect().height));
+    App->draw(*sprite);
+  }
+
+  void drawStatus(Field *field) {
+    int cnt = field->countMovesRemaining();
+
+    if (cnt > 0) {
+      std::string s = "Moves left:" + cnt;
+
+      sf::Text *Text = new sf::Text();
+
+      Text->setString(s.c_str());
+      Text->setPosition(250.f, 10.f);
+      App->draw(*Text);
+    } else {
+      sf::Text *Text = new sf::Text();
+
+      Text->setString("Game over!");
+      Text->setStyle(sf::Text::Bold);
+      Text->setPosition((App->getSize().x / 4) - (Text->getLocalBounds().width / 2), (App->getSize().y / 4) - (Text->getLocalBounds().height / 2));
+      Text->setColor(sf::Color(255, 0, 0));
+      Text->rotate(30);
+      App->draw(*Text);
+    }
+  }
+
+private:
+  sf::Sprite *Peg;
+  sf::Sprite *SelPeg;
+  sf::Sprite *EmptyCursor;
+  sf::Sprite *PegCursor;
+  sf::Sprite *SelPegCursor;
+  sf::Sprite *Hole;
+
+  sf::Font *font;
+
+  sf::RenderWindow *App;
+};
+
+class Game {
+public:
+  Game() {
+    field = new Field();
+    renderer = new Renderer();
+
+    cursorPos = sf::Vector2i(START_COL, START_ROW);
+    selectionPos = sf::Vector2i(-1, -1);
+  }
+
+  ~Game() {
+    delete field;
+    delete renderer;
+  }
+
+  void initialize() {
+    field->initialize();
+    renderer->initialize();
+  }
+
+  void run() {
+    while (handleEvents()) {
+      draw();
+    }
+  }
+
+protected:
+  bool handleEvents() {
+    // Process events
+    sf::Event *evt;
+
+    while ((evt = renderer->pollEvent())) {
+      // Close window : exit
+      if (evt->type == sf::Event::Closed) {
+        return false;
+      }
+
+      // Escape key : exit
+      if ((evt->type == sf::Event::KeyPressed) && (evt->key.code == sf::Keyboard::Escape)) {
+        return false;
+      }
+
+      // Manipulation
+      if (evt->type == sf::Event::KeyReleased) {
+        if (evt->key.code == sf::Keyboard::Right && field->isAvailable(cursorPos.x, cursorPos.y + 1)) {
+          cursorPos.y += 1;
+        } else if (evt->key.code == sf::Keyboard::Left && field->isAvailable(cursorPos.x, cursorPos.y - 1)) {
+          cursorPos.y -= 1;
+        } else if (evt->key.code == sf::Keyboard::Up && field->isAvailable(cursorPos.x - 1, cursorPos.y)) {
+          cursorPos.x -= 1;
+        } else if (evt->key.code == sf::Keyboard::Down && field->isAvailable(cursorPos.x + 1, cursorPos.y)) {
+          cursorPos.x += 1;
+        }
+
+        if (evt->key.code == sf::Keyboard::Space || evt->key.code == sf::Keyboard::Return) {
+          if (selectionPos.y != -1 && selectionPos.x != -1) {
+            if (selectionPos.y != cursorPos.y || selectionPos.x != cursorPos.x) {
+              field->swap(selectionPos.x, selectionPos.y, cursorPos.x, cursorPos.y);
+              selectionPos.y = selectionPos.x = -1;
+            } else if (selectionPos.y == cursorPos.y && selectionPos.x == cursorPos.x) {
+              selectionPos.y = selectionPos.x = -1;
+            }
+          } else if (!field->isEmpty(cursorPos.x, cursorPos.y)) {
+            selectionPos.y = cursorPos.y;
+            selectionPos.x = cursorPos.x;
+          }
         }
       }
     }
 
-    // Draw some text
-    int cnt = field->countMovesRemaining();
-
-    if (cnt > 0) {
-      char *s = new char[255];
-
-      sprintf(s, "Moves left:%d", cnt);
-
-      sf::Text Text;
-
-      Text.setString(s);
-      Text.setPosition(250.f, 10.f);
-      App.draw(Text);
-    } else {
-      sf::Text Text;
-
-      Text.setString("Game over!");
-      Text.setStyle(sf::Text::Bold);
-      //Text.setPosition(300.f, 100.f);
-      Text.setPosition((App.getSize().x / 4) - (Text.getLocalBounds().width / 2), (App.getSize().y / 4) - (Text.getLocalBounds().height / 2));
-      Text.setColor(sf::Color(255, 0, 0));
-      Text.rotate(30);
-      App.draw(Text);
-    }
-
-    // Finally, display the rendered frame on screen
-    App.display();
-    stateChanged = false;
+    return true;
   }
 
-  delete field;
+  void draw() {
+    renderer->draw(field, cursorPos, selectionPos);
+  }
+
+private:
+  Field *field;
+  Renderer *renderer;
+
+  sf::Vector2i cursorPos;
+  sf::Vector2i selectionPos;
+};
+
+int main() {
+  Game *game = new Game();
+
+  game->initialize();
+  game->run();
 
   return 0;
 }
