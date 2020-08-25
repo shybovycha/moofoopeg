@@ -2,9 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 
-#define NOT_A_FIELD -1
-#define EMPTY 0
-#define PEG 1
+enum FieldElement { NOT_A_FIELD = -1, EMPTY = 0, PEG = 1 };
 
 class Field {
 public:
@@ -12,7 +10,7 @@ public:
 
   ~Field();
 
-  void initialize(int **data, sf::Vector2u size, sf::Vector2u startPos);
+  void initialize(FieldElement **data, sf::Vector2u size, sf::Vector2u startPos);
 
   bool isMoveValid(int rowFrom, int colFrom, int rowTo, int colTo);
 

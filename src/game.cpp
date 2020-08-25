@@ -13,7 +13,7 @@ Game::~Game() {
   delete renderer;
 }
 
-void Game::initialize(int **fieldData, sf::Vector2u fieldSize, sf::Vector2u startPos) {
+void Game::initialize(FieldElement **fieldData, sf::Vector2u fieldSize, sf::Vector2u startPos) {
   field->initialize(fieldData, fieldSize, startPos);
   renderer->initialize();
 }

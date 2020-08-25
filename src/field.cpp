@@ -14,7 +14,7 @@ Field::~Field() {
   delete[] data;
 }
 
-void Field::initialize(int **data, sf::Vector2u size, sf::Vector2u startPos) {
+void Field::initialize(FieldElement **data, sf::Vector2u size, sf::Vector2u startPos) {
   this->size = size;
   this->startPos = startPos;
 

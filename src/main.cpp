@@ -13,7 +13,7 @@ int main() {
      { -1, -1, 1, 1, 1, -1, -1 }
   };
 
-  game->initialize((int**) &field[0], sf::Vector2u(7, 7), sf::Vector2u(3, 3));
+  game->initialize((FieldElement**) &field[0], sf::Vector2u(7, 7), sf::Vector2u(3, 3));
   game->run();
 
   return 0;

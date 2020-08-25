@@ -13,17 +13,13 @@
 #define START_ROW 3
 #define START_COL 3
 
-#define NOT_A_FIELD -1
-#define EMPTY 0
-#define PEG 1
-
 class Game {
 public:
   Game();
 
   ~Game();
 
-  void initialize(int **fieldData, sf::Vector2u fieldSize, sf::Vector2u startPos);
+  void initialize(FieldElement **fieldData, sf::Vector2u fieldSize, sf::Vector2u startPos);
 
   void run();
 
