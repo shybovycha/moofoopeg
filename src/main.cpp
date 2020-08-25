@@ -102,21 +102,6 @@ public:
     return size;
   }
 
-  // // checks whether there is only one peg left on the board
-  // bool checkWin() {
-  //   int cnt = 0;
-
-  //   for (int i = 0; i < FIELD_SIZE; ++i) {
-  //     for (int t = 0; t < FIELD_SIZE; ++t) {
-  //       if (data[i][t] == PEG) {
-  //         ++cnt;
-  //       }
-  //     }
-  //   }
-
-  //   return (cnt == 1);
-  // }
-
   bool isValidPos(int row, int col) {
     return row > -1 && col > -1 && row < size.y && col < size.x;
   }
@@ -210,16 +195,16 @@ protected:
   void loadResources() {
     std::cout << "Loading sprites..." << std::endl;
 
-    pegSprite = loadSpriteFromFile("peg.jpg");
-    selectedPegSprite = loadSpriteFromFile("sel_peg.jpg");
-    emptyCursorSprite = loadSpriteFromFile("cur_hole.jpg");
-    cursorSprite = loadSpriteFromFile("cur_peg.jpg");
-    selectedCursorSprite = loadSpriteFromFile("cur_sel.jpg");
-    blankTileSprite = loadSpriteFromFile("hole.jpg");
+    pegSprite = loadSpriteFromFile("assets/peg.jpg");
+    selectedPegSprite = loadSpriteFromFile("assets/sel_peg.jpg");
+    emptyCursorSprite = loadSpriteFromFile("assets/cur_hole.jpg");
+    cursorSprite = loadSpriteFromFile("assets/cur_peg.jpg");
+    selectedCursorSprite = loadSpriteFromFile("assets/cur_sel.jpg");
+    blankTileSprite = loadSpriteFromFile("assets/hole.jpg");
 
     std::cout << "Loading fonts..." << std::endl;
 
-    textFont = loadFontFromFile("arial.ttf");
+    textFont = loadFontFromFile("assets/arial.ttf");
 
     std::cout << "Resources loaded" << std::endl;
   }
