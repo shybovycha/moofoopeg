@@ -1,5 +1,4 @@
-#ifndef __GAME_HPP__
-#define __GAME_HPP__
+#pragma once
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
@@ -40,5 +39,3 @@ private:
   sf::Vector2i cursorPos;
   sf::Vector2i selectionPos;
 };
-
-#endif

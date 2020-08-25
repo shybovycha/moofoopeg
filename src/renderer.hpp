@@ -1,5 +1,4 @@
-#ifndef __RENDERER_HPP__
-#define __RENDERER_HPP__
+#pragma once
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
@@ -49,5 +48,3 @@ private:
 
   sf::RenderWindow *appWindow;
 };
-
-#endif

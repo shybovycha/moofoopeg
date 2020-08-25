@@ -1,5 +1,4 @@
-#ifndef __FIELD_HPP__
-#define __FIELD_HPP__
+#pragma once
 
 #include <SFML/Graphics.hpp>
 
@@ -34,5 +33,3 @@ private:
   sf::Vector2u size;
   sf::Vector2u startPos;
 };
-
-#endif
