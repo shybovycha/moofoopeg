@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 
 project(moofoopeg VERSION 0.1.0 LANGUAGES CXX)
 
-add_executable(moofoopeg src/main.cpp)
+add_executable(moofoopeg src/main.cpp src/field.cpp src/game.cpp src/renderer.cpp)
 
 set_target_properties(moofoopeg PROPERTIES
     CXX_STANDARD 17
