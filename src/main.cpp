@@ -1,7 +1,7 @@
 #include "game.hpp"
 
 int main() {
-  Game *game = new Game();
+  std::unique_ptr<Game> game = std::make_unique<Game>();
 
   int field[7][7] = {
      { -1, -1, 1, 1, 1, -1, -1 },

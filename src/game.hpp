@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <memory>
 
 #include "field.hpp"
 #include "renderer.hpp"
@@ -29,8 +30,8 @@ protected:
   void draw();
 
 private:
-  Field *field;
-  Renderer *renderer;
+  std::shared_ptr<Field> field;
+  std::shared_ptr<Renderer> renderer;
 
   sf::Vector2i cursorPos;
   sf::Vector2i selectionPos;

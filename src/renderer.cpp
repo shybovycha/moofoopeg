@@ -21,7 +21,7 @@ void Renderer::initialize() {
   initWindow();
 }
 
-void Renderer::draw(Field *field, sf::Vector2i cursorPos, sf::Vector2i selectionPos) {
+void Renderer::draw(std::shared_ptr<Field> field, sf::Vector2i cursorPos, sf::Vector2i selectionPos) {
   // Clear screen
   appWindow->clear(sf::Color::Black);
 
@@ -39,7 +39,7 @@ sf::Event* Renderer::pollEvent() {
   sf::Event *event = new sf::Event();
 
   if (!appWindow->pollEvent(*event)) {
-    return NULL;
+    return nullptr;
   }
 
   return event;
@@ -97,7 +97,7 @@ void Renderer::initWindow() {
   std::cout << "Window opened" << std::endl;
 }
 
-void Renderer::drawField(Field *field, sf::Vector2i cursorPos, sf::Vector2i selectionPos) {
+void Renderer::drawField(std::shared_ptr<Field> field, sf::Vector2i cursorPos, sf::Vector2i selectionPos) {
   for (int row = 0; row < field->getSize().x; row++) {
     for (int col = 0; col < field->getSize().y; col++) {
       if (cursorPos.x == col && cursorPos.y == row) {
@@ -136,7 +136,7 @@ void Renderer::drawSpriteAtFieldPosition(sf::Sprite *sprite, sf::Vector2i positi
   appWindow->draw(*sprite);
 }
 
-void Renderer::drawStatus(Field *field) {
+void Renderer::drawStatus(std::shared_ptr<Field> field) {
   int cnt = field->countMovesRemaining();
   sf::Text *text = new sf::Text();
 

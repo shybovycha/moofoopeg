@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <memory>
 
 #include "field.hpp"
 
@@ -17,7 +18,7 @@ public:
 
   void initialize();
 
-  void draw(Field *field, sf::Vector2i cursorPos, sf::Vector2i selectionPos);
+  void draw(std::shared_ptr<Field> field, sf::Vector2i cursorPos, sf::Vector2i selectionPos);
 
   sf::Event* pollEvent();
 
@@ -30,11 +31,11 @@ protected:
 
   void initWindow();
 
-  void drawField(Field *field, sf::Vector2i cursorPos, sf::Vector2i selectionPos);
+  void drawField(std::shared_ptr<Field> field, sf::Vector2i cursorPos, sf::Vector2i selectionPos);
 
   void drawSpriteAtFieldPosition(sf::Sprite *sprite, sf::Vector2i position);
 
-  void drawStatus(Field *field);
+  void drawStatus(std::shared_ptr<Field> field);
 
 private:
   sf::Sprite *pegSprite;

@@ -2,7 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 
-enum FieldElement { NOT_A_FIELD = -1, EMPTY = 0, PEG = 1 };
+enum class FieldElement { NOT_A_FIELD = -1, EMPTY = 0, PEG = 1 };
 
 class Field {
 public:
@@ -10,7 +10,7 @@ public:
 
   ~Field();
 
-  void initialize(FieldElement **data, sf::Vector2u size, sf::Vector2u startPos);
+  void initialize(FieldElement** data, sf::Vector2u size, sf::Vector2u startPos);
 
   bool isMoveValid(int rowFrom, int colFrom, int rowTo, int colTo);
 
@@ -27,7 +27,7 @@ public:
   bool isEmpty(unsigned int row, unsigned int col);
 
 private:
-  int **data;
+  FieldElement** data;
   sf::Vector2u size;
   sf::Vector2u startPos;
 };

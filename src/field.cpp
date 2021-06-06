@@ -1,9 +1,5 @@
 #include "field.hpp"
 
-#define NOT_A_FIELD -1
-#define EMPTY 0
-#define PEG 1
-
 Field::Field() : data(0), size(sf::Vector2u(0, 0)), startPos(sf::Vector2u(-1, -1)) {}
 
 Field::~Field() {
@@ -14,27 +10,27 @@ Field::~Field() {
   delete[] data;
 }
 
-void Field::initialize(FieldElement **data, sf::Vector2u size, sf::Vector2u startPos) {
-  this->size = size;
-  this->startPos = startPos;
+void Field::initialize(FieldElement** data, sf::Vector2u size, sf::Vector2u startPos) {
+  size = size;
+  startPos = startPos;
 
-  this->data = new int*[size.y];
+  data = new FieldElement*[size.y];
 
   for (int i = 0; i < size.y; ++i) {
-    this->data[i] = new int[size.x];
+    data[i] = new FieldElement[size.x];
   }
 
   for (int i = 0; i < size.y; ++i) {
     for (int t = 0; t < size.x; ++t) {
       if ((i < 2 && t < 2) || (i < 2 && t > 4) || (i > 4 && t > 4) || (i > 4 && t < 2)) {
-        this->data[i][t] = NOT_A_FIELD;
+        data[i][t] = FieldElement::NOT_A_FIELD;
       } else {
-        this->data[i][t] = PEG;
+        data[i][t] = FieldElement::PEG;
       }
     }
   }
 
-  this->data[startPos.y][startPos.x] = EMPTY;
+  data[startPos.y][startPos.x] = FieldElement::EMPTY;
 }
 
 bool Field::isMoveValid(int rowFrom, int colFrom, int rowTo, int colTo) {
@@ -49,9 +45,9 @@ bool Field::isMoveValid(int rowFrom, int colFrom, int rowTo, int colTo) {
     return 0;
   }
 
-  return (data[rowFrom][colFrom] == PEG &&
-      data[rowTo][colTo] == EMPTY &&
-      data[rowFrom + (dr / 2)][colFrom + (dc / 2)] == PEG);  // TODO: rework to check there are holes all the way long
+  return (data[rowFrom][colFrom] == FieldElement::PEG &&
+      data[rowTo][colTo] == FieldElement::EMPTY &&
+      data[rowFrom + (dr / 2)][colFrom + (dc / 2)] == FieldElement::PEG);  // TODO: rework to check there are holes all the way long
 }
 
 int Field::countMovesRemaining() {
@@ -81,9 +77,9 @@ void Field::swapPegs(int rowFrom, int colFrom, int rowTo, int colTo) {
   }
 
   if ((dr == 0 && abs(dc) == 2) || (abs(dr) == 2 && dc == 0)) {
-    data[rowFrom][colFrom] = EMPTY;
-    data[rowFrom + (dr / 2)][colFrom + (dc / 2)] = EMPTY;
-    data[rowTo][colTo] = PEG;
+    data[rowFrom][colFrom] = FieldElement::EMPTY;
+    data[rowFrom + (dr / 2)][colFrom + (dc / 2)] = FieldElement::EMPTY;
+    data[rowTo][colTo] = FieldElement::PEG;
   }
 }
 
@@ -96,9 +92,9 @@ bool Field::isValidPos(int row, int col) {
 }
 
 bool Field::isAvailable(unsigned int row, unsigned int col) {
-  return isValidPos(row, col) && data[row][col] != NOT_A_FIELD;
+  return isValidPos(row, col) && data[row][col] != FieldElement::NOT_A_FIELD;
 }
 
 bool Field::isEmpty(unsigned int row, unsigned int col) {
-  return isValidPos(row, col) && data[row][col] == EMPTY;
+  return isValidPos(row, col) && data[row][col] == FieldElement::EMPTY;
 }

@@ -1,16 +1,13 @@
 #include "game.hpp"
 
-Game::Game() {
-  field = new Field();
-  renderer = new Renderer();
-
-  cursorPos = sf::Vector2i(START_COL, START_ROW);
-  selectionPos = sf::Vector2i(-1, -1);
+Game::Game() : 
+    field(std::make_shared<Field>()), 
+    renderer(std::make_shared<Renderer>()), 
+    cursorPos(sf::Vector2i(START_COL, START_ROW)), 
+    selectionPos(sf::Vector2i(-1, -1)) {
 }
 
 Game::~Game() {
-  delete field;
-  delete renderer;
 }
 
 void Game::initialize(FieldElement **fieldData, sf::Vector2u fieldSize, sf::Vector2u startPos) {
