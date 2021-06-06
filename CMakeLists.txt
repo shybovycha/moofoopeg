@@ -1,15 +1,15 @@
-cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 
 project(moofoopeg VERSION 0.1.0 LANGUAGES CXX)
 
-add_executable(moofoopeg src/main.cpp src/field.cpp src/game.cpp src/renderer.cpp)
+set(EXECUTABLE_NAME moofoopeg)
+set(SOURCES "src/main.cpp" "src/field.cpp" "src/game.cpp" "src/renderer.cpp")
 
-set_target_properties(moofoopeg PROPERTIES
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED ON
-    CXX_EXTENSIONS ON
-)
+add_executable(${EXECUTABLE_NAME} ${SOURCES})
 
-add_subdirectory(lib/SFML-2.4)
+target_compile_features(${EXECUTABLE_NAME} PRIVATE cxx_std_17)
 
-target_link_libraries(moofoopeg PRIVATE sfml-graphics sfml-window sfml-system)
+find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE sfml-system sfml-graphics sfml-window)
+
+add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory  ${CMAKE_CURRENT_LIST_DIR}/assets $<TARGET_FILE_DIR:${EXECUTABLE_NAME}>/assets)
