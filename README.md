@@ -45,4 +45,4 @@ _ _ [o]
  |---- empty spots
 ```
 
-Use arrow keys to move the cursor and `Space` to select the peg or the new space for it (confirm the move).
+Use arrow keys to move the cursor and <kbd>Space</kbd> to select the peg or the new space for it (confirm the move).
