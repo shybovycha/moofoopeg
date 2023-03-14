@@ -11,28 +11,23 @@
 #include "field.hpp"
 #include "renderer.hpp"
 
-#define START_ROW 3
-#define START_COL 3
-
 class Game {
 public:
-  Game();
+    Game(std::vector<std::vector<FieldElement>> fieldData, sf::Vector2u startPos);
 
-  ~Game();
+    ~Game() = default;
 
-  void initialize(FieldElement **fieldData, sf::Vector2u fieldSize, sf::Vector2u startPos);
-
-  void run();
+    void run();
 
 protected:
-  bool handleEvents();
+    bool handleEvents();
 
-  void draw();
+    void draw();
 
 private:
-  std::shared_ptr<Field> field;
-  std::shared_ptr<Renderer> renderer;
+    std::shared_ptr<Field> field;
+    std::shared_ptr<Renderer> renderer;
 
-  sf::Vector2i cursorPos;
-  sf::Vector2i selectionPos;
+    sf::Vector2i cursorPos;
+    sf::Vector2i selectionPos;
 };

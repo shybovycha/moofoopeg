@@ -1,20 +1,21 @@
+#include <vector>
+#include <memory>
+
 #include "game.hpp"
 
 int main() {
-  std::unique_ptr<Game> game = std::make_unique<Game>();
+    std::vector<std::vector<FieldElement>> field = {
+        { FieldElement::NOT_A_FIELD, FieldElement::NOT_A_FIELD, FieldElement::PEG, FieldElement::PEG,   FieldElement::PEG, FieldElement::NOT_A_FIELD, FieldElement::NOT_A_FIELD },
+        { FieldElement::NOT_A_FIELD, FieldElement::NOT_A_FIELD, FieldElement::PEG, FieldElement::PEG,   FieldElement::PEG, FieldElement::NOT_A_FIELD, FieldElement::NOT_A_FIELD },
+        { FieldElement::PEG,         FieldElement::PEG,         FieldElement::PEG, FieldElement::PEG,   FieldElement::PEG, FieldElement::PEG,         FieldElement::PEG },
+        { FieldElement::PEG,         FieldElement::PEG,         FieldElement::PEG, FieldElement::EMPTY, FieldElement::PEG, FieldElement::PEG,         FieldElement::PEG },
+        { FieldElement::PEG,         FieldElement::PEG,         FieldElement::PEG, FieldElement::PEG,   FieldElement::PEG, FieldElement::PEG,         FieldElement::PEG },
+        { FieldElement::NOT_A_FIELD, FieldElement::NOT_A_FIELD, FieldElement::PEG, FieldElement::PEG,   FieldElement::PEG, FieldElement::NOT_A_FIELD, FieldElement::NOT_A_FIELD },
+        { FieldElement::NOT_A_FIELD, FieldElement::NOT_A_FIELD, FieldElement::PEG, FieldElement::PEG,   FieldElement::PEG, FieldElement::NOT_A_FIELD, FieldElement::NOT_A_FIELD }
+    };
 
-  int field[7][7] = {
-     { -1, -1, 1, 1, 1, -1, -1 },
-     { -1, -1, 1, 1, 1, -1, -1 },
-     {  1,  1, 1, 1, 1,  1,  1 },
-     {  1,  1, 1, 0, 1,  1,  1 },
-     {  1,  1, 1, 1, 1,  1,  1 },
-     { -1, -1, 1, 1, 1, -1, -1 },
-     { -1, -1, 1, 1, 1, -1, -1 }
-  };
+    auto game = std::make_unique<Game>(std::move(field), sf::Vector2u(3, 3));
+    game->run();
 
-  game->initialize((FieldElement**) &field[0], sf::Vector2u(7, 7), sf::Vector2u(3, 3));
-  game->run();
-
-  return 0;
+    return 0;
 }

@@ -2,32 +2,37 @@
 
 #include <SFML/Graphics.hpp>
 
-enum class FieldElement { NOT_A_FIELD = -1, EMPTY = 0, PEG = 1 };
+enum struct FieldElement {
+    NOT_A_FIELD = -1,
+    EMPTY = 0,
+    PEG = 1
+};
 
 class Field {
 public:
-  Field();
+    Field(std::vector<std::vector<FieldElement>> data, sf::Vector2u startPos);
 
-  ~Field();
+    ~Field() = default;
 
-  void initialize(FieldElement** data, sf::Vector2u size, sf::Vector2u startPos);
+    bool isMoveValid(int rowFrom, int colFrom, int rowTo, int colTo);
 
-  bool isMoveValid(int rowFrom, int colFrom, int rowTo, int colTo);
+    int countMovesRemaining();
 
-  int countMovesRemaining();
+    void swapPegs(int rowFrom, int colFrom, int rowTo, int colTo);
 
-  void swapPegs(int rowFrom, int colFrom, int rowTo, int colTo);
+    sf::Vector2u getSize();
 
-  sf::Vector2u getSize();
+    bool isValidPos(int row, int col);
 
-  bool isValidPos(int row, int col);
+    bool isAvailable(unsigned int row, unsigned int col);
 
-  bool isAvailable(unsigned int row, unsigned int col);
-
-  bool isEmpty(unsigned int row, unsigned int col);
+    bool isEmpty(unsigned int row, unsigned int col);
 
 private:
-  FieldElement** data;
-  sf::Vector2u size;
-  sf::Vector2u startPos;
+    std::vector<std::vector<FieldElement>> data;
+    sf::Vector2u size;
+    sf::Vector2u startPos;
+
+    bool isDirty;
+    int lastMoveCount;
 };

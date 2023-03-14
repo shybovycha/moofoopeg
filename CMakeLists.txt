@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 project(moofoopeg VERSION 0.1.0 LANGUAGES CXX)
 
@@ -7,7 +7,7 @@ set(SOURCES "src/main.cpp" "src/field.cpp" "src/game.cpp" "src/renderer.cpp")
 
 add_executable(${EXECUTABLE_NAME} ${SOURCES})
 
-target_compile_features(${EXECUTABLE_NAME} PRIVATE cxx_std_17)
+target_compile_features(${EXECUTABLE_NAME} PRIVATE cxx_std_20)
 
 find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE sfml-system sfml-graphics sfml-window)
