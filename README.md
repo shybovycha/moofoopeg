@@ -4,7 +4,7 @@
 
 ## Compiling and running
 
-You will need CMake and a compiler toolkit.
+You will need [CMake](https://cmake.org/), [vcpkg](https://github.com/microsoft/vcpkg) and a compiler toolkit.
 
 In order to build `moofoopeg` just run:
 
